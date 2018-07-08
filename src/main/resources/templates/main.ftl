@@ -13,19 +13,34 @@
         <@a.addform "/add" />
     </#if>
 
-        <#--<p><@l.logout /></p>-->
             <h5 class="mt-5">Все сообщения</h5>
 
             <ul class="list-group mt-3">
 
-                <#list messages as message>
-                    <li class="list-group-item">${message.text}
+                <#list tweets as tweet>
+                    <li class="list-group-item">${tweet.text}
                         &nbsp;&nbsp;&nbsp;&nbsp;
                     </li>
                 <#else>
                     <h5>Нет сообщений =(</h5>
                 </#list>
             </ul>
+
+
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination mt-5">
+        <#list pagesList as p>
+           <#-- <#if p == ${pageNumber}>
+            <li class="page-item active"><a class="page-link" href="/page?pageNumber=${p}">${p}</a></li>
+            </#if>-->
+            <li class="page-item <#list pag as pa>
+                 <#if p == pa>active</#if>
+              </#list>
+            "><a class="page-link" href="/page?pageNumber=${p}">${p}</a></li>
+        </#list>
+                </ul>
+            </nav>
 
         </div><!--End col-sm-md-->
     </div><!--End row-->

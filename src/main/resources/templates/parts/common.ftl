@@ -3,8 +3,10 @@
 <html>
 <head>
     <title>Title</title>
+
     <meta http-equiv="Content-Type" text="text/html; charset=UTF-8"/>
     <meta name="viewport" text="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
           integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
 
@@ -14,7 +16,7 @@
             min-height: 100%;
         }
         body {
-            margin-bottom: 60px; /* Margin bottom by footer height */
+            margin-bottom: 80px; /* Margin bottom by footer height */
         }
         .footer {
             position: absolute;

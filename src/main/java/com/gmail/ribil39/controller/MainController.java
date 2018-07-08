@@ -3,14 +3,18 @@ package com.gmail.ribil39.controller;
 import com.gmail.ribil39.domain.Message;
 import com.gmail.ribil39.domain.User;
 import com.gmail.ribil39.repos.MessageRepo;
+import com.gmail.ribil39.repos.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -18,11 +22,61 @@ public class MainController {
 
     @Autowired
     MessageRepo messageRepo;
+    @Autowired
+    UserRepo userRepo;
 
     @GetMapping("/")
-    public String main(Map<String, Object> model){
-        Iterable<Message> messages = messageRepo.findAll();
-        model.put("messages", messages);
+    public String main(Map<String, Object> model, @AuthenticationPrincipal User user){
+
+        model.put("user", user);
+
+        // Портянка для пагинации
+        Page<Message> messagePage = messageRepo
+                .findAll(new PageRequest(
+                        0, 10, Sort.Direction.ASC, "id"));
+        List<Message> tweets = messagePage.getContent();
+        model.put("tweets", tweets);
+
+        int pagesNumber = messagePage.getTotalPages();
+        model.put("totalNumber", pagesNumber);
+        ArrayList pagesList = new ArrayList();
+        for (int i = 0; i < pagesNumber; i++){
+            pagesList.add(i+1);
+        }
+        model.put("pagesList", pagesList);
+
+        ArrayList pag = new ArrayList();
+        pag.add(1);
+        model.put("pag", pag);
+
+        return "main";
+    }
+
+    @GetMapping("/page")
+    public String getMessagePage(Map<String, Object> model,
+                                 @RequestParam Integer pageNumber,
+                                 @AuthenticationPrincipal User user) {
+        model.put("user", user);
+
+        // Портянка для пагинации
+        Page<Message> messagePage = messageRepo
+                .findAll(new PageRequest(pageNumber-1,
+                        10, Sort.Direction.ASC, "id"));
+        List<Message> tweets = messagePage.getContent();
+        model.put("tweets", tweets);
+
+        int pagesNumber = messagePage.getTotalPages();
+        model.put("totalNumber", pagesNumber);
+        ArrayList pagesList = new ArrayList();
+        for (int i = 0; i < pagesNumber; i++){
+            pagesList.add(i+1);
+        }
+        model.put("pagesList", pagesList);
+
+        ArrayList pag = new ArrayList();
+        pag.add(pageNumber);
+        model.put("pag", pag);
+
         return "main";
     }
 
@@ -48,5 +102,39 @@ public class MainController {
         return "redirect:/";
     }
 
+    @GetMapping("/user/{id}")
+    public String userMessages(Map<String, Object> model,
+                               @PathVariable("id") Integer id){
+        Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
+        model.put("tweets", tweets);
+
+        return "mymessages";
+    }
+
+    @GetMapping("/user/messageedit/{id}")
+    public String messageEditPage(@AuthenticationPrincipal User user,
+                                  Map<String, Object> model,
+                                  @PathVariable("id") Integer id){
+        model.put("user", user);
+
+        Message tweet = messageRepo.findById(id);
+
+        model.put("tweet", tweet);
+
+
+        return "messageedit";
+    }
+
+    @PostMapping("editMessage")
+    public String editMessage(@AuthenticationPrincipal User user,
+                              Map<String, Object> model,
+                              @ModelAttribute("tweet") Message tweet) {
+        model.put("user", user);
+
+        tweet.setAuthor(user);
+        tweet.setDate(new Date());
+        messageRepo.save(tweet);
+        return "redirect:/user/"+user.getId();
+    }
 
 }
