@@ -1,8 +1,10 @@
 package com.gmail.ribil39.controller;
 
 import com.gmail.ribil39.domain.Message;
+import com.gmail.ribil39.domain.ReplyPool;
 import com.gmail.ribil39.domain.User;
 import com.gmail.ribil39.repos.MessageRepo;
+import com.gmail.ribil39.repos.ReplyPoolRepo;
 import com.gmail.ribil39.repos.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,18 +23,13 @@ public class MainController {
     MessageRepo messageRepo;
     @Autowired
     UserRepo userRepo;
+    @Autowired
+    ReplyPoolRepo replyPoolRepo;
 
 
 
     @GetMapping("/")
     public String main(Map<String, Object> model, @AuthenticationPrincipal User user){
-
-        //Set<Message> mm = messageRepo.findByCondition(user.getId());
-        //System.out.println(mm.getText());
-
-       /* for(Message m : mm) {
-            System.out.println(m.getText());
-        }*/
 
 
         // Портянка для пагинации
@@ -168,6 +165,44 @@ public class MainController {
         tweet.setDate(new Date());
         messageRepo.save(tweet);
         return "redirect:/user/"+user.getId();
+    }
+
+    @GetMapping("/message/{id}")
+    public String messagePage(Map<String, Object> model,
+                               @AuthenticationPrincipal User user,
+                               @PathVariable("id") Integer id){
+        Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
+        model.put("tweets", tweets);
+
+        Message currentMessage = messageRepo.findById(id);
+        model.put("currentMessage", currentMessage);
+
+        Set<Message> replies;
+        replies = messageRepo.findById(id).getReply().getReplies();
+
+        model.put("replies", replies);
+
+        return "message";
+    }
+
+
+    @PostMapping("/addreply")
+    public String addReply(@AuthenticationPrincipal User user, @RequestParam String text,
+                           Map<String, Object> model) {
+
+
+        Date date = new Date();
+        Message message = new Message(text, date, user);
+        ReplyPool replyPool = replyPoolRepo.findById(4);
+        Set<Message> messages = replyPool.getReplies();
+        messages.add(message);
+        replyPool.setReplies(messages);
+
+        message.setReply(replyPool);
+
+        replyPoolRepo.save(replyPool);
+        messageRepo.save(message);
+        return "redirect:/";
     }
 
 }

@@ -11,7 +11,7 @@
             <ul class="list-group mt-3">
 
                 <#list tweets as tweet>
-                    <li class="list-group-item">${tweet.text}
+                    <li class="list-group-item"><a href="/message/${tweet.id}">${tweet.text}</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <a href="messageedit/${tweet.id}">
                             <i class="fas fa-pencil-alt"></i>

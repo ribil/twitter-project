@@ -23,7 +23,14 @@ public class Message implements Serializable {
     @ManyToMany(mappedBy = "messages", fetch = FetchType.EAGER)
     private Set<User> retweets = new HashSet<>();
 
-    //private Integer totalLikes;
+    @ManyToOne
+    @JoinColumn(name = "replypool_id")
+    private ReplyPool replyPool;
+
+    @OneToOne(mappedBy = "message")
+    private ReplyPool reply;
+
+
 
     public Message() {
     }
@@ -43,6 +50,9 @@ public class Message implements Serializable {
 
     public String getAuthorName() {
         return author != null ? author.getUsername() : "<none>";
+    }
+    public Integer getAuthorId() {
+        return author.getId();
     }
 
     public User getAuthor() {
@@ -83,6 +93,22 @@ public class Message implements Serializable {
 
     public void setRetweets(Set<User> retweets) {
         this.retweets = retweets;
+    }
+
+    public ReplyPool getReplyPool() {
+        return replyPool;
+    }
+
+    public void setReplyPool(ReplyPool replyPool) {
+        this.replyPool = replyPool;
+    }
+
+    public ReplyPool getReply() {
+        return reply;
+    }
+
+    public void setReply(ReplyPool reply) {
+        this.reply = reply;
     }
 }
 
