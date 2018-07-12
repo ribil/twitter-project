@@ -1,11 +1,14 @@
 package com.gmail.ribil39.domain;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Entity
-public class Message {
+public class Message implements Serializable {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     private Integer id;
@@ -17,6 +20,11 @@ public class Message {
     @JoinColumn(name = "user_id")
     private User author;
 
+    @ManyToMany(mappedBy = "messages", fetch = FetchType.EAGER)
+    private Set<User> retweets = new HashSet<>();
+
+    //private Integer totalLikes;
+
     public Message() {
     }
 
@@ -24,6 +32,13 @@ public class Message {
         this.author = user;
         this.text = text;
         this.date = date;
+    }
+
+    public Message(String text, Date date, User author, Set<User> retweets) {
+        this.text = text;
+        this.date = date;
+        this.author = author;
+        this.retweets = retweets;
     }
 
     public String getAuthorName() {
@@ -62,70 +77,12 @@ public class Message {
         this.date = date;
     }
 
+    public Set<User> getRetweets() {
+        return retweets;
+    }
+
+    public void setRetweets(Set<User> retweets) {
+        this.retweets = retweets;
+    }
 }
 
-/*
-@Entity
-public class Message {
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Integer id;
-
-    private String text;
-
-    private Date currentDate;
-
-    public Date getCurrentDate() {
-        return currentDate;
-    }
-
-    public void setCurrentDate(Date currentDate) {
-        this.currentDate = currentDate;
-    }
-
-
- @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
-    private User author;
-
-    public Message() {
-    }
-
-    public Message(String text, Date currentDate, User user) {
-        this.author = user;
-        this.text = text;
-        this.currentDate = currentDate;
-    }
-
-    public String getAuthorName() {
-        return author != null ? author.getUsername() : "<none>";
-    }
-
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User author) {
-        this.author = author;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-
-
-}
-*/

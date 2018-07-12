@@ -12,10 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class MainController {
@@ -25,29 +22,45 @@ public class MainController {
     @Autowired
     UserRepo userRepo;
 
+
+
     @GetMapping("/")
     public String main(Map<String, Object> model, @AuthenticationPrincipal User user){
 
-        model.put("user", user);
+        //Set<Message> mm = messageRepo.findByCondition(user.getId());
+        //System.out.println(mm.getText());
+
+       /* for(Message m : mm) {
+            System.out.println(m.getText());
+        }*/
+
 
         // Портянка для пагинации
         Page<Message> messagePage = messageRepo
                 .findAll(new PageRequest(
                         0, 10, Sort.Direction.ASC, "id"));
         List<Message> tweets = messagePage.getContent();
+
         model.put("tweets", tweets);
+
+        model.put("user", user);
+        ArrayList userss = new ArrayList();
+        userss.add(user);
+        model.put("userss", userss);
 
         int pagesNumber = messagePage.getTotalPages();
         model.put("totalNumber", pagesNumber);
         ArrayList pagesList = new ArrayList();
         for (int i = 0; i < pagesNumber; i++){
             pagesList.add(i+1);
+
         }
         model.put("pagesList", pagesList);
 
         ArrayList pag = new ArrayList();
         pag.add(1);
         model.put("pag", pag);
+
 
         return "main";
     }
@@ -57,6 +70,10 @@ public class MainController {
                                  @RequestParam Integer pageNumber,
                                  @AuthenticationPrincipal User user) {
         model.put("user", user);
+
+        ArrayList userss = new ArrayList();
+        userss.add(user);
+        model.put("userss", userss);
 
         // Портянка для пагинации
         Page<Message> messagePage = messageRepo
@@ -78,6 +95,17 @@ public class MainController {
         model.put("pag", pag);
 
         return "main";
+    }
+
+    @GetMapping("/retweet/{id}")
+    public String retweet(@PathVariable("id") Integer id,
+                          Map<String, Object> model,
+                          @AuthenticationPrincipal User user){
+        Set<Message> retweets = user.getMessages();
+        retweets.add(messageRepo.findById(id));
+        user.setMessages(retweets);
+        userRepo.save(user);
+        return "redirect:/";
     }
 
     @PostMapping("/addmessage")
@@ -104,9 +132,14 @@ public class MainController {
 
     @GetMapping("/user/{id}")
     public String userMessages(Map<String, Object> model,
+                               @AuthenticationPrincipal User user,
                                @PathVariable("id") Integer id){
         Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
         model.put("tweets", tweets);
+
+        Set<Message> retweets = user.getMessages();
+
+        model.put("retweets", retweets);
 
         return "mymessages";
     }

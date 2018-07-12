@@ -20,6 +20,13 @@
                 <#else>
                     <h5>Нет сообщений =(</h5>
                 </#list>
+                 <#list retweets as retweet>
+                    <li class="list-group-item">${retweet.text}&nbsp;&nbsp;&nbsp;
+                        <span class="badge badge-secondary">retweet</span>
+                    </li>
+                 <#else>
+                    <h5>Нет ретвитов...</h5>
+                 </#list>
             </ul>
 
         </div><!--End col-sm-md-->

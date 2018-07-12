@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Title</title>
+    <title>Твиттер</title>
 
     <meta http-equiv="Content-Type" text="text/html; charset=UTF-8"/>
     <meta name="viewport" text="width=device-width, initial-scale=1, shrink-to-fit=no">

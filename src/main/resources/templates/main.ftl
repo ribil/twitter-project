@@ -18,7 +18,17 @@
             <ul class="list-group mt-3">
 
                 <#list tweets as tweet>
-                    <li class="list-group-item">${tweet.text}
+                    <li class="list-group-item">${tweet.text} &nbsp;&nbsp;&nbsp;
+                        <#if isUser>
+                            <#list userss as us>
+                                <#if us.getUsername() != tweet.getAuthorName()>
+    <a href="/retweet/${tweet.id}"><i class="fas fa-retweet" style="color: lightgray"></i></a>
+                                </#if>
+                            <#else>
+                            <p>Проблема с юзерами</p>
+                            </#list>
+
+                        </#if>
                         &nbsp;&nbsp;&nbsp;&nbsp;
                     </li>
                 <#else>
@@ -26,14 +36,9 @@
                 </#list>
             </ul>
 
-
-
             <nav aria-label="Page navigation">
                 <ul class="pagination mt-5">
         <#list pagesList as p>
-           <#-- <#if p == ${pageNumber}>
-            <li class="page-item active"><a class="page-link" href="/page?pageNumber=${p}">${p}</a></li>
-            </#if>-->
             <li class="page-item <#list pag as pa>
                  <#if p == pa>active</#if>
               </#list>
@@ -41,6 +46,7 @@
         </#list>
                 </ul>
             </nav>
+
 
         </div><!--End col-sm-md-->
     </div><!--End row-->
