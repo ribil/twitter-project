@@ -35,7 +35,7 @@
 
 <footer class="footer">
     <div class="container">
-        <span class="text-muted">Footer</span>
+        <span class="text-muted">None rights are reserved</span>
     </div>
 </footer>
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

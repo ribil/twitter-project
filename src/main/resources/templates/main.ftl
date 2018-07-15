@@ -18,7 +18,9 @@
             <ul class="list-group mt-3">
 
                 <#list tweets as tweet>
-                    <li class="list-group-item">${tweet.text} &nbsp;&nbsp;&nbsp;
+                    <li class="list-group-item">
+                        <a style="color: darkslategray" href="/message/${tweet.id}">${tweet.text}</a>
+                        &nbsp;&nbsp;&nbsp;
                         <#if isUser>
                             <#list userss as us>
                                 <#if us.getUsername() != tweet.getAuthorName()>
@@ -30,6 +32,9 @@
 
                         </#if>
                         &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span class="badge badge-secondary"><#if tweet.getAuthorNick()??>
+                        ${tweet.getAuthorNick()}<#else>anon</#if>
+                    </span>
                     </li>
                 <#else>
                     <h5>Нет сообщений =(</h5>

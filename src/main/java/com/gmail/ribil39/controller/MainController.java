@@ -6,6 +6,7 @@ import com.gmail.ribil39.domain.User;
 import com.gmail.ribil39.repos.MessageRepo;
 import com.gmail.ribil39.repos.ReplyPoolRepo;
 import com.gmail.ribil39.repos.UserRepo;
+import com.gmail.ribil39.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,9 +28,8 @@ public class MainController {
     ReplyPoolRepo replyPoolRepo;
 
 
-
     @GetMapping("/")
-    public String main(Map<String, Object> model, @AuthenticationPrincipal User user){
+    public String main(Map<String, Object> model, @AuthenticationPrincipal User user) {
 
 
         // Портянка для пагинации
@@ -48,8 +48,8 @@ public class MainController {
         int pagesNumber = messagePage.getTotalPages();
         model.put("totalNumber", pagesNumber);
         ArrayList pagesList = new ArrayList();
-        for (int i = 0; i < pagesNumber; i++){
-            pagesList.add(i+1);
+        for (int i = 0; i < pagesNumber; i++) {
+            pagesList.add(i + 1);
 
         }
         model.put("pagesList", pagesList);
@@ -74,7 +74,7 @@ public class MainController {
 
         // Портянка для пагинации
         Page<Message> messagePage = messageRepo
-                .findAll(new PageRequest(pageNumber-1,
+                .findAll(new PageRequest(pageNumber - 1,
                         10, Sort.Direction.ASC, "id"));
         List<Message> tweets = messagePage.getContent();
         model.put("tweets", tweets);
@@ -82,8 +82,8 @@ public class MainController {
         int pagesNumber = messagePage.getTotalPages();
         model.put("totalNumber", pagesNumber);
         ArrayList pagesList = new ArrayList();
-        for (int i = 0; i < pagesNumber; i++){
-            pagesList.add(i+1);
+        for (int i = 0; i < pagesNumber; i++) {
+            pagesList.add(i + 1);
         }
         model.put("pagesList", pagesList);
 
@@ -97,7 +97,7 @@ public class MainController {
     @GetMapping("/retweet/{id}")
     public String retweet(@PathVariable("id") Integer id,
                           Map<String, Object> model,
-                          @AuthenticationPrincipal User user){
+                          @AuthenticationPrincipal User user) {
         Set<Message> retweets = user.getMessages();
         retweets.add(messageRepo.findById(id));
         user.setMessages(retweets);
@@ -109,7 +109,7 @@ public class MainController {
     public String add(@AuthenticationPrincipal User user, @RequestParam String text,
                       Map<String, Object> model) {
 
-        if (text.length()>250) {
+        if (text.length() > 250) {
             model.put("warning", "<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">\n" +
                     "                <strong>Количество символов превышает 250!</strong>\n" +
                     "                <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">\n" +
@@ -130,7 +130,7 @@ public class MainController {
     @GetMapping("/user/{id}")
     public String userMessages(Map<String, Object> model,
                                @AuthenticationPrincipal User user,
-                               @PathVariable("id") Integer id){
+                               @PathVariable("id") Integer id) {
         Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
         model.put("tweets", tweets);
 
@@ -144,7 +144,7 @@ public class MainController {
     @GetMapping("/user/messageedit/{id}")
     public String messageEditPage(@AuthenticationPrincipal User user,
                                   Map<String, Object> model,
-                                  @PathVariable("id") Integer id){
+                                  @PathVariable("id") Integer id) {
         model.put("user", user);
 
         Message tweet = messageRepo.findById(id);
@@ -164,23 +164,25 @@ public class MainController {
         tweet.setAuthor(user);
         tweet.setDate(new Date());
         messageRepo.save(tweet);
-        return "redirect:/user/"+user.getId();
+        return "redirect:/user/" + user.getId();
     }
 
     @GetMapping("/message/{id}")
     public String messagePage(Map<String, Object> model,
-                               @AuthenticationPrincipal User user,
-                               @PathVariable("id") Integer id){
+                              @AuthenticationPrincipal User user,
+                              @PathVariable("id") Integer id) {
         Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
         model.put("tweets", tweets);
 
         Message currentMessage = messageRepo.findById(id);
         model.put("currentMessage", currentMessage);
 
-        Set<Message> replies;
-        replies = messageRepo.findById(id).getReply().getReplies();
+        if (messageRepo.findById(id).getReply() != null) {
+            Set<Message> replies;
+            replies = messageRepo.findById(id).getReply().getReplies();
 
-        model.put("replies", replies);
+            model.put("replies", replies);
+        }
 
         return "message";
     }
@@ -188,21 +190,74 @@ public class MainController {
 
     @PostMapping("/addreply")
     public String addReply(@AuthenticationPrincipal User user, @RequestParam String text,
+                           @RequestParam Integer currentMessageId,
                            Map<String, Object> model) {
-
 
         Date date = new Date();
         Message message = new Message(text, date, user);
-        ReplyPool replyPool = replyPoolRepo.findById(4);
-        Set<Message> messages = replyPool.getReplies();
-        messages.add(message);
-        replyPool.setReplies(messages);
 
-        message.setReply(replyPool);
-
+        ReplyPool replyPool;
+        if (replyPoolRepo.findById(currentMessageId) != null) {
+            replyPool = replyPoolRepo.findById(currentMessageId);
+        } else {
+            replyPool = new ReplyPool();
+            replyPool.setId(currentMessageId);
+        }
+        message.setReplyPool(replyPool);
         replyPoolRepo.save(replyPool);
         messageRepo.save(message);
+
         return "redirect:/";
     }
+
+    @GetMapping("/profile")
+    public String editNickPage(@AuthenticationPrincipal User user,
+                               Map<String, Object> model) {
+        model.put("user", user);
+
+        return "profile";
+    }
+
+    @PostMapping("editNick")
+    public String editNick(@AuthenticationPrincipal User user,
+                           Map<String, Object> model,
+                           @RequestParam String nick,
+                           @ModelAttribute("user") User u) {
+
+
+        String firstLetter = String.valueOf(nick.charAt(0));
+
+
+        if (MessageService.isNumeric(firstLetter)) {
+
+            model.put("warning", "<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">\n" +
+                    "                <strong>Первый символ не должен быть цифрой!</strong>\n" +
+                    "                <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">\n" +
+                    "                    <span aria-hidden=\"true\">&times;</span>\n" +
+                    "                </button>\n" +
+                    "            </div>");
+            model.put("user", user);
+            return "profile";
+        }
+
+        if (!nick.matches("^[A-Za-z0-9]+$")) {
+
+            model.put("warning", "<div class=\"alert alert-warning alert-dismissible fade show\" role=\"alert\">\n" +
+                    "                <strong>Ник должен состоять только из латинских букв!</strong>\n" +
+                    "                <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">\n" +
+                    "                    <span aria-hidden=\"true\">&times;</span>\n" +
+                    "                </button>\n" +
+                    "            </div>");
+            model.put("user", user);
+            return "profile";
+        }
+
+        user.setName(nick);
+        userRepo.save(user);
+        model.put("user", user);
+
+        return "profile";
+    }
+
 
 }

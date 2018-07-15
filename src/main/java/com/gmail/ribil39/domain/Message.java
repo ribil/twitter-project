@@ -51,6 +51,9 @@ public class Message implements Serializable {
     public String getAuthorName() {
         return author != null ? author.getUsername() : "<none>";
     }
+    public String getAuthorNick() {
+        return author != null ? author.getName() : "anon";
+    }
     public Integer getAuthorId() {
         return author.getId();
     }

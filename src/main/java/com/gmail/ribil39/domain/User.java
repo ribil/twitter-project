@@ -18,6 +18,7 @@ public class User implements UserDetails, Serializable {
     private String username;
     private String password;
     private boolean active;
+    private String name;
 
     private  String email;
     private String activationCode;
@@ -131,5 +132,13 @@ public class User implements UserDetails, Serializable {
 
     public void setMessages(Set<Message> messages) {
         this.messages = messages;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -16,6 +16,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="/user/${user.getId()}">Мои твиты</span></a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/profile">Профиль</span></a>
+            </li>
 </#if>
         </ul>
     </div>
