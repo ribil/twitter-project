@@ -10,7 +10,7 @@ import java.util.Set;
 @Entity
 public class Message implements Serializable {
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     private String text;
@@ -30,6 +30,8 @@ public class Message implements Serializable {
     @OneToOne(mappedBy = "message")
     private ReplyPool reply;
 
+   /* @JoinColumn(name = "replypool_id")
+    private Set<Message> replies;*/
 
 
     public Message() {
@@ -51,9 +53,11 @@ public class Message implements Serializable {
     public String getAuthorName() {
         return author != null ? author.getUsername() : "<none>";
     }
+
     public String getAuthorNick() {
         return author != null ? author.getName() : "anon";
     }
+
     public Integer getAuthorId() {
         return author.getId();
     }

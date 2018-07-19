@@ -42,7 +42,7 @@ public class UserSevice implements UserDetailsService {
         if (!StringUtils.isEmpty(user.getEmail())) {
             String message = String.format(
                     "Привет, %s! \n" +
-                            "Добро пожаловать в Твиттер. Пожалуйста, перейди по ссылке: http://localhost:8080/activate/%s",
+                            "Добро пожаловать в Твиттер. Пожалуйста, перейди по ссылке: http://159.89.21.133/activate/%s",
                     user.getUsername(),
                     user.getActivationCode()
             );
