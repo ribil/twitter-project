@@ -3,14 +3,18 @@ package com.gmail.ribil39.controller;
 import com.gmail.ribil39.domain.Message;
 import com.gmail.ribil39.domain.ReplyPool;
 import com.gmail.ribil39.domain.User;
-import com.gmail.ribil39.repos.MessageRepo;
-import com.gmail.ribil39.repos.ReplyPoolRepo;
-import com.gmail.ribil39.repos.UserRepo;
+import com.gmail.ribil39.repository.MessageRepository;
+import com.gmail.ribil39.repository.ReplyPoolRepository;
+import com.gmail.ribil39.repository.UserRepository;
 import com.gmail.ribil39.service.MessageService;
+import com.gmail.ribil39.service.ReplyPoolService;
+import com.gmail.ribil39.service.UserSevice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -21,75 +25,28 @@ import java.util.*;
 public class MainController {
 
     @Autowired
-    MessageRepo messageRepo;
+    MessageService messageService;
     @Autowired
-    UserRepo userRepo;
+    UserSevice userSevice;
     @Autowired
-    ReplyPoolRepo replyPoolRepo;
+    ReplyPoolService replyPoolService;
 
 
     @GetMapping("/")
-    public String main(Map<String, Object> model, @AuthenticationPrincipal User user) {
+    public String main(
+            Map<String, Object> model,
+            @AuthenticationPrincipal User user,
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<Message> messagePage = messageService.findAllTweetsPage(pageable);
 
-
-        // Портянка для пагинации
-        Page<Message> messagePage = messageRepo
-                .findAll(new PageRequest(
-                        0, 10, Sort.Direction.ASC, "id"));
-        List<Message> tweets = messagePage.getContent();
-
-        model.put("tweets", tweets);
+        model.put("page", messagePage);
+        model.put("url", "/");
 
         model.put("user", user);
         ArrayList userss = new ArrayList();
         userss.add(user);
         model.put("userss", userss);
-
-        int pagesNumber = messagePage.getTotalPages();
-        model.put("totalNumber", pagesNumber);
-        ArrayList pagesList = new ArrayList();
-        for (int i = 0; i < pagesNumber; i++) {
-            pagesList.add(i + 1);
-
-        }
-        model.put("pagesList", pagesList);
-
-        ArrayList pag = new ArrayList();
-        pag.add(1);
-        model.put("pag", pag);
-
-
-        return "main";
-    }
-
-    @GetMapping("/page")
-    public String getMessagePage(Map<String, Object> model,
-                                 @RequestParam Integer pageNumber,
-                                 @AuthenticationPrincipal User user) {
-        model.put("user", user);
-
-        ArrayList userss = new ArrayList();
-        userss.add(user);
-        model.put("userss", userss);
-
-        // Портянка для пагинации
-        Page<Message> messagePage = messageRepo
-                .findAll(new PageRequest(pageNumber - 1,
-                        10, Sort.Direction.ASC, "id"));
-        List<Message> tweets = messagePage.getContent();
-        model.put("tweets", tweets);
-
-        int pagesNumber = messagePage.getTotalPages();
-        model.put("totalNumber", pagesNumber);
-        ArrayList pagesList = new ArrayList();
-        for (int i = 0; i < pagesNumber; i++) {
-            pagesList.add(i + 1);
-        }
-        model.put("pagesList", pagesList);
-
-        ArrayList pag = new ArrayList();
-        pag.add(pageNumber);
-        model.put("pag", pag);
 
         return "main";
     }
@@ -99,9 +56,9 @@ public class MainController {
                           Map<String, Object> model,
                           @AuthenticationPrincipal User user) {
         Set<Message> retweets = user.getMessages();
-        retweets.add(messageRepo.findById(id));
+        retweets.add(messageService.findTweetById(id));
         user.setMessages(retweets);
-        userRepo.save(user);
+        userSevice.saveUser(user);
         return "redirect:/";
     }
 
@@ -116,14 +73,14 @@ public class MainController {
                     "                    <span aria-hidden=\"true\">&times;</span>\n" +
                     "                </button>\n" +
                     "            </div>");
-            Iterable<Message> messages = messageRepo.findAll();
+            Iterable<Message> messages = messageService.findAllTweets();
             model.put("messages", messages);
             return "main";
         }
 
         Date date = new Date();
         Message message = new Message(text, date, user);
-        messageRepo.save(message);
+        messageService.saveMessage(message);
         return "redirect:/";
     }
 
@@ -131,7 +88,7 @@ public class MainController {
     public String userMessages(Map<String, Object> model,
                                @AuthenticationPrincipal User user,
                                @PathVariable("id") Integer id) {
-        Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
+        Iterable<Message> tweets = messageService.findTweetsByAuthor(id);
         model.put("tweets", tweets);
 
         Set<Message> retweets = user.getMessages();
@@ -147,7 +104,7 @@ public class MainController {
                                   @PathVariable("id") Integer id) {
         model.put("user", user);
 
-        Message tweet = messageRepo.findById(id);
+        Message tweet = messageService.findTweetById(id);
 
         model.put("tweet", tweet);
 
@@ -163,7 +120,7 @@ public class MainController {
 
         tweet.setAuthor(user);
         tweet.setDate(new Date());
-        messageRepo.save(tweet);
+        messageService.saveMessage(tweet);
         return "redirect:/user/" + user.getId();
     }
 
@@ -171,15 +128,15 @@ public class MainController {
     public String messagePage(Map<String, Object> model,
                               @AuthenticationPrincipal User user,
                               @PathVariable("id") Integer id) {
-        Iterable<Message> tweets = messageRepo.findByAuthor(userRepo.findById(id));
+        Iterable<Message> tweets = messageService.findTweetsByAuthor(id);
         model.put("tweets", tweets);
 
-        Message currentMessage = messageRepo.findById(id);
+        Message currentMessage = messageService.findTweetById(id);
         model.put("currentMessage", currentMessage);
 
-        if (messageRepo.findById(id).getReply() != null) {
+        if (messageService.findTweetById(id).getReply() != null) {
             Set<Message> replies;
-            replies = messageRepo.findById(id).getReply().getReplies();
+            replies = messageService.findTweetById(id).getReply().getReplies();
 
             model.put("replies", replies);
         }
@@ -197,15 +154,15 @@ public class MainController {
         Message message = new Message(text, date, user);
 
         ReplyPool replyPool;
-        if (replyPoolRepo.findById(currentMessageId) != null) {
-            replyPool = replyPoolRepo.findById(currentMessageId);
+        if (replyPoolService.findReplyPoolById(currentMessageId) != null) {
+            replyPool = replyPoolService.findReplyPoolById(currentMessageId);
         } else {
             replyPool = new ReplyPool();
             replyPool.setId(currentMessageId);
         }
         message.setReplyPool(replyPool);
-        replyPoolRepo.save(replyPool);
-        messageRepo.save(message);
+        replyPoolService.saveReplyPool(replyPool);
+        messageService.saveMessage(message);
 
         return "redirect:/";
     }
@@ -253,7 +210,7 @@ public class MainController {
         }
 
         user.setName(nick);
-        userRepo.save(user);
+        userSevice.saveUser(user);
         model.put("user", user);
 
         return "profile";

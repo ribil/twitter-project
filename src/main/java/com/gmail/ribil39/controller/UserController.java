@@ -1,28 +1,13 @@
 package com.gmail.ribil39.controller;
 
-import com.gmail.ribil39.domain.Role;
-import com.gmail.ribil39.domain.User;
-import com.gmail.ribil39.repos.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Controller
 //@RequestMapping("/user")
 //@PreAuthorize("hasAuthority('ADMIN')")
 public class UserController {
    /* @Autowired
-    private UserRepo userRepo;
+    private UserRepository userRepository;
 
     @GetMapping("/admin")
     public String admin() {
@@ -31,7 +16,7 @@ public class UserController {
 
     @GetMapping("/user")
     public String userList(Model model) {
-        model.addAttribute("users", userRepo.findAll());
+        model.addAttribute("users", userRepository.findAll());
 
         return "userList";
     }
@@ -64,7 +49,7 @@ public class UserController {
             }
         }
 
-        userRepo.save(user);
+        userRepository.save(user);
 
         return "redirect:/user";
     }*/
